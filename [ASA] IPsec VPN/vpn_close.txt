@@ -1,0 +1,46 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+import paramiko
+import re
+import time
+import json
+import sys
+from IPy import IP
+
+
+
+def writecommand(deviceip,username,password):
+        ssh=paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+	command=["enable","Pa888888","conf t","no crypto ikev1 enable outside","end"]
+        try:
+            ssh.connect(hostname=deviceip, username="auto", password="Au@1hblsqt", timeout=10, allow_agent=False,look_for_keys=False)
+            command[1] = "Au@1hblsqt"
+        except:
+            ssh.connect(hostname=deviceip, username="admin", password="cisco", timeout=10, allow_agent=False,look_for_keys=False)
+            command[1] = "cisco"
+        chan=ssh.invoke_shell()
+        chan.settimeout(10)
+        t = time.strftime('%m%d %H:%M',time.localtime(time.time()))
+        print t
+        for line in command:
+                chan.send(line+"\n")
+                if line == "wr":
+                    time.sleep(4)
+                else:
+                    time.sleep(1)
+                print chan.recv(99999)
+        chan.close()
+        ssh.close()
+
+def main():
+        firewall = ["30.95.0.96","30.127.0.96"]
+        username="admin"
+        password="cisco"
+        for deviceip in firewall:
+                print deviceip
+                writecommand(deviceip,username,password)
+        return "vpn closed!"
+
+if __name__ == "__main__":
+        main() 

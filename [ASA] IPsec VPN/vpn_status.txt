@@ -1,0 +1,44 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+import paramiko
+import re
+import time
+
+def getstatus(deviceip,username,password):
+        ssh=paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+	command=["enable","Pa888888","sh run | inc crypto ikev1 enable outside"]
+        try:
+            ssh.connect(hostname=deviceip, username="auto", password="Au@1hblsqt", timeout=10, allow_agent=False,look_for_keys=False)
+            command[1] = "Au@1hblsqt"
+        except:
+            ssh.connect(hostname=deviceip, username="admin", password="cisco", timeout=10, allow_agent=False,look_for_keys=False)
+            command[1] = "cisco"
+        chan=ssh.invoke_shell()
+        chan.settimeout(10)
+        t = time.strftime('%m%d %H:%M',time.localtime(time.time()))
+        print t
+        for line in command:
+                chan.send(line+"\n")
+                time.sleep(2)
+                recv = chan.recv(99999)
+        ret = recv.split('\r\n')[-2]
+        print ret
+        chan.close()
+        ssh.close()
+        return "on" if re.match("^crypto",ret) else "off"
+
+def main():
+        firewall = ["30.95.0.96","30.127.0.96"]
+        username="admin"
+        password="cisco"
+        status = {}
+        for deviceip in firewall:
+                print deviceip
+                status[deviceip] = getstatus(deviceip,username,password)
+                if status[deviceip] == "on":
+                        return "on"
+        return "off"
+
+if __name__ == "__main__":
+        print main() 
